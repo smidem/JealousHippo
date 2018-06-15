@@ -51,14 +51,6 @@ startcol = 0
 tab = "    "
 attack_up = tab + "ATTACK INCREASED!"
 defense_up = tab + "DEFENSE INCREASED!"
-# convert each column of the map to a string list that can be parsed.
-a = maze_map['A'].str.split(' ').tolist()
-b = maze_map['B'].str.split(' ').tolist()
-c = maze_map['C'].str.split(' ').tolist()
-d = maze_map['D'].str.split(' ').tolist()
-e = maze_map['E'].str.split(' ').tolist()
-f = maze_map['F'].str.split(' ').tolist()
-
 
 # separate interactive objects from maze boundaries and return the respecitve
 # lists for each of those elements
@@ -84,30 +76,29 @@ def find_objects(coordinates):
     return objects
 
 
-def find_boundaries(column):
+def find_boundaries(coordinates):
     boundaries = []
     and_idx = 0
-    # iterate over each row in the column given
-    for row in column:
 
-        # any coordinates with objects will contain 'and'
-        if any('and' in row for row in column):
-            # iterate over each word in the row to find the position of 'and'
-            for j, word in enumerate(row):
-                # once 'and' is located store the index in and_idx
-                if word == 'and':
-                    and_idx = j
-        # check if an 'and' was found, and make sure that it occurs before the
-        # end of the row
-        if and_idx > 0 and (and_idx + 1 < len(row)):
-            # add the elements of the row that occur after 'and' to the
-            # boundaries list
-            boundaries += [row[and_idx + 1:len(row)]]
-            # reset and_idx to 0 for use in the next row
-            and_idx = 0
-        # if no 'and' was found add the whole row to the boundaries list
-        elif and_idx == 0:
-            boundaries += [row]
+    # any coordinates with objects will contain 'and'
+    if any('and' in row for row in coordinates):
+        # iterate over each word in the row to find the position of 'and'
+        for j, word in enumerate(coordinates):
+            # once 'and' is located store the index in and_idx
+            if word == 'and':
+                and_idx = j
+    # check if an 'and' was found, and make sure that it occurs before the
+    # end of the row
+    if and_idx > 0 and (and_idx + 1 < len(coordinates)):
+        # add the elements of the row that occur after 'and' to the
+        # boundaries list
+        boundaries += [coordinates[and_idx + 1:len(coordinates)]]
+        # reset and_idx to 0 for use in the next row
+        and_idx = 0
+    # if no 'and' was found add the whole row to the boundaries list
+    elif and_idx == 0:
+        boundaries += [coordinates]
+
     # if only one field was passed to find_boundaries, transform boundaries to
     # a list instead of a list of lists
     if len(boundaries) == 1:
@@ -125,6 +116,7 @@ def find_boundaries(column):
             if i > 0:
                 boundaries.append(word)
             boundaries[i] = word
+
     return boundaries
 
 
@@ -243,7 +235,8 @@ def interpret_boundaries(coordinates):
 
 
 def dead():
-    print("    YOU DIED.")
+    global tab
+    print(tab + "YOU DIED.")
     exit()
 
 
@@ -320,4 +313,4 @@ def main():
 main()
 # start()
 # print(current_loc)
-# print(find_objects(current_loc))
+# print(find_boundaries(current_loc))
