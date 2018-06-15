@@ -41,8 +41,12 @@ maze_map = pd.DataFrame({
         "hidden door south and south east corner",
         "hidden door north and west facing end"])})
 
-# initialize a current location variable
+# initialize variables used in calculating current location
 current_loc = 0
+current_col = 0
+startrow = 0
+startcol = 0
+
 # commonly used strings
 tab = "    "
 attack_up = tab + "ATTACK INCREASED!"
@@ -58,31 +62,24 @@ f = maze_map['F'].str.split(' ').tolist()
 
 # separate interactive objects from maze boundaries and return the respecitve
 # lists for each of those elements
-def find_objects(column):
+def find_objects(coordinates):
     objects = []
     and_idx = 0
-    # iterate over each row in the column given
-    for row in column:
 
-        # any coordinates with objects will contain 'and'
-        # check if any of these elements contain objects
-        if any('and' in row for row in column):
-            # iterate over each word in the row to find the position of 'and'
-            for j, word in enumerate(row):
-                # once 'and' is found store the preceeding words into the
-                # objects list
-                if word == 'and':
-                    and_idx = j
-                    objects += row[:and_idx]
-        # if object is not found using the 'and' keyword, store an empty value
-        # so that len(objects) still provides useful positional data
-        else:
-            objects += [""]
-
-        # if only one object is found, return only the object and not a list of
-        # length one
-        # if len(objects) == 1:
-        #     objects = objects.pop()
+    # any coordinates with objects will contain 'and'
+    # check if any of these elements contain objects
+    if any('and' in word for word in coordinates):
+        # iterate over each word in the row to find the position of 'and'
+        for j, word in enumerate(coordinates):
+            # once 'and' is found store the preceeding words into the
+            # objects list
+            if word == 'and':
+                and_idx = j
+                objects += coordinates[:and_idx]
+    # if object is not found using the 'and' keyword, store an empty value
+    # so that len(objects) still provides useful positional data
+    else:
+        objects += [""]
 
     return objects
 
@@ -151,8 +148,26 @@ def encounter_object(object):
 
 
 def change_position(direction):
-    global current_loc
-    # for i in range(0, 0):
+    global maze_map, current_loc, current_col, startrow, startcol
+    max_rows = maze_map.shape[0]
+    max_cols = maze_map.shape[1]
+    if ('north' in direction) and (startrow - 1 >= 0):
+        startrow -= 1
+        current_col = maze_map.iloc[:, startcol].str.split(' ').tolist()
+        current_loc = current_col[startrow]
+    elif ('south' in direction) and (startrow + 1 < max_rows):
+        startrow += 1
+        current_col = maze_map.iloc[:, startcol].str.split(' ').tolist()
+        current_loc = current_col[startrow]
+    elif ('west' in direction) and (startcol - 1 >= 0):
+        startcol -= 1
+        current_col = maze_map.iloc[:, startcol].str.split(' ').tolist()
+        current_loc = current_col[startrow]
+    elif ('east' in direction) and (startcol + 1 < max_cols):
+        startcol += 1
+        current_col = maze_map.iloc[:, startcol].str.split(' ').tolist()
+        current_loc = current_col[startrow]
+    return current_loc
 
 
 def wait(secs):
@@ -196,13 +211,13 @@ def which_way():
         if direction in restricted:
             print(blocked_directions)
             wait(.5)
-    # change_position(direction)
+    print(change_position(direction))
 
 
 def interpret_boundaries(coordinates):
     boundaries = find_boundaries(coordinates)
     boundary_type = ""
-    object = find_objects(coordinates).pop()
+    object = find_objects(coordinates).pop(0)
     length = len(boundaries)
     restricted = []
     if length > 1:
@@ -241,8 +256,11 @@ def failed_to_enter():
 
 
 def start():
-    global current_loc
-    current_loc = a[4:5]
+    global current_loc, current_col, startrow, startcol
+    startrow = 4
+    startcol = 0
+    current_col = maze_map.iloc[:, startcol].str.split(' ').tolist()
+    current_loc = current_col[startrow]
 
 
 def entrance():
@@ -300,3 +318,6 @@ def main():
 
 
 main()
+# start()
+# print(current_loc)
+# print(find_objects(current_loc))
