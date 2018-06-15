@@ -1,36 +1,52 @@
 import pandas as pd
+import time
 
 # create a map of the maze as data frame that includes interactive objects and
 # the maze boundaries as strings.
-maze_map = pd.DataFrame({ 'A' : pd.Series(["up left corner",
-                                "north south hall", "down left corner",
-                                "up left corner",
-                                "down left corner"]),
-                          'B' : pd.Series(["shield and up right corner",
-                                "torch and down left corner",
-                                "minotaur and up",
-                                "torch and down right corner",
-                                "east west hall"]),
-                          'C' : pd.Series(["up left corner",
-                                "down right corner", "up right corner",
-                                "down left corner", "east west hall"]),
-                          'D' : pd.Series(["manticore and up",
-                                "east west hall", "torch and down left corner",
-                                "helmet and west facing end",
-                                "east west hall"]),
-                          'E' : pd.Series(["east west hall",
-                                "sword and east facing end", "up right corner",
-                                "down left corner", "east west hall"]),
-                          'F' : pd.Series(["exit and down right corner",
-                                "up right corner", "north south hall",
-                                "hidden door down and down right corner",
-                                "hidden door up and west facing end"])})
+maze_map = pd.DataFrame({
+    'A': pd.Series([
+        "north west corner",
+        "north south hall",
+        "south west corner",
+        "north west corner",
+        "compass and south west corner"]),
+    'B': pd.Series([
+        "shield and north east corner",
+        "torch and south west corner",
+        "minotaur and north wall",
+        "torch and south east corner",
+        "east west hall"]),
+    'C': pd.Series([
+        "north west corner",
+        "south east corner",
+        "north east corner",
+        "south west corner",
+        "east west hall"]),
+    'D': pd.Series([
+        "manticore and north wall",
+        "east west hall",
+        "torch and south west corner",
+        "helmet and west facing end",
+        "east west hall"]),
+    'E': pd.Series([
+        "east west hall",
+        "sword and east facing end",
+        "north east corner",
+        "south west corner",
+        "east west hall"]),
+    'F': pd.Series([
+        "exit and south east corner",
+        "north east corner",
+        "north south hall",
+        "hidden door south and south east corner",
+        "hidden door north and west facing end"])})
 
 # initialize a current location variable
 current_loc = 0
 # commonly used strings
-weapon = "    WEAPON ACQUIRED!"
-attack_up = "    ATTACK INCREASED!"
+tab = "    "
+attack_up = tab + "ATTACK INCREASED!"
+defense_up = tab + "DEFENSE INCREASED!"
 # convert each column of the map to a string list that can be parsed.
 a = maze_map['A'].str.split(' ').tolist()
 b = maze_map['B'].str.split(' ').tolist()
@@ -39,40 +55,6 @@ d = maze_map['D'].str.split(' ').tolist()
 e = maze_map['E'].str.split(' ').tolist()
 f = maze_map['F'].str.split(' ').tolist()
 
-# DO NOT USE, this function is still in development
-def find_and(column):
-    # create a list that will store the index of and in each row of the column
-    # given
-    and_idx = []
-    and_count = 0
-    # iterate over each row in the column given
-    for i, row in enumerate(column):
-        # test if and is in this row
-        if any('and' in row for row in column):
-            # iterate over each word in the row to find the position of 'and'
-            for j, word in enumerate(row):
-                # once 'and' is found store the index
-                if word == 'and':
-                    # append the index to the and_idx list and increment
-                    # and_count
-                    and_idx.append(j)
-                    and_count += 1
-
-        # if there is not an and in this row append an empty element to the
-        # and_idx list in order to provide useful positional data
-        if not ('and' in row):
-            and_idx.append("")
-
-    # iterate over each element in the and_idx list
-    for element in and_idx:
-        # if the element is not empty and only one 'and' was found, pop that
-        # element off so that and_idx only returns an index instead of a list
-        if ((not (element == '')) and (and_count == 1)):
-            and_idx = and_idx.pop()
-        # elif ((element == '') and (and_count == 0)):
-
-
-    return and_idx
 
 # separate interactive objects from maze boundaries and return the respecitve
 # lists for each of those elements
@@ -94,14 +76,16 @@ def find_objects(column):
                     objects += row[:and_idx]
         # if object is not found using the 'and' keyword, store an empty value
         # so that len(objects) still provides useful positional data
-        else: objects += [""]
+        else:
+            objects += [""]
 
         # if only one object is found, return only the object and not a list of
         # length one
-        if len(objects) == 1:
-            objects = objects.pop()
+        # if len(objects) == 1:
+        #     objects = objects.pop()
 
     return objects
+
 
 def find_boundaries(column):
     boundaries = []
@@ -141,84 +125,128 @@ def find_boundaries(column):
             # to avoid index out of bounds errors, append words to the list if
             # the first word has already been inserted into the first element
             # of boundaries
-            if i > 0: boundaries.append(word)
+            if i > 0:
+                boundaries.append(word)
             boundaries[i] = word
     return boundaries
 
+
 def encounter_object(object):
-    if "door" in object[0]:
-        return "door"
+    global tab
+    weapon = tab + "WEAPON ACQUIRED!"
+    compass_found = """
+    As you begin to move, you hear a clinking sound near your feet.
+    You bend down and spot the smallest glint of something metallic.
+    You slowly brush the dirt away, and you find a compass!
+
+    COMPASS ACQUIRED!
+
+    Conveniently, the compass indicates that the passage directly in
+    front you is pointed north.\n"""
+
+    if object == 'compass':
+        print(compass_found)
+    # if object == 'sword':
+    #     print(sword_found)
+
 
 def change_position(direction):
     global current_loc
+    # for i in range(0, 0):
+
+
+def wait(secs):
+    for i in range(0, 5):
+        time.sleep(secs)
+        print(tab + '.', end='')
+        if i == 4:
+            print()
+
 
 def which_way():
-    global current_loc
-    restricted =
+    global current_loc, tab
+    object = find_objects(current_loc)
+    restricted = interpret_boundaries(find_boundaries(current_loc))
     you_are_here = """
     It is still very dark in this area. You wander around with
     your hands outstretched in an attempt to discover your
     surroundings.\n"""
     blocked_directions = """
     With some difficulty, you are able to discern
-    that the ways to the {} and {} blocked.""".format(*restricted)
+    that the ways to the {} and {} are blocked.\n""".format(*restricted)
     dead_end = """
     You stumble around in the dark for some time and use your
     hands to explore the features in front of you. After some
-    time, you determine that this is a dead end."""
-    
+    time, you determine that this is a dead end.\n"""
 
+    wait(2)
+    print(you_are_here)
+    wait(1)
 
-def get_boundary_type(boundaries):
-    boundary_types = ['corner', 'hall', 'end']
-    boundary = set(boundaries).intersection(boundary_types).pop()
-    return boundary
+    if (0 < len(object) <= 1):
+        object = object.pop()
+        encounter_object(object)
+        wait(2)
+
+    direction = ''
+    direction_prompt = '\n' + tab + 'Which direction would you like to go?\n'
+    while (direction == '') or (direction in restricted):
+        print(direction_prompt)
+        direction = input(tab + '> ').lower()
+        if direction in restricted:
+            print(blocked_directions)
+            wait(.5)
+    # change_position(direction)
+
 
 def interpret_boundaries(coordinates):
     boundaries = find_boundaries(coordinates)
     boundary_type = ""
-    objects = find_objects(coordinates)
+    object = find_objects(coordinates).pop()
     length = len(boundaries)
+    restricted = []
     if length > 1:
         boundary_type = boundaries.pop(-1)
 
-    restricted = []
-    if (boundary_type == 'corner'):
+    if (boundary_type == 'corner') or (boundary_type == 'wall'):
         restricted = boundaries
     elif (boundary_type == 'hall'):
         if (boundaries[0] == 'east') and (boundaries[1] == 'west'):
-            restricted = [up, down]
+            restricted = ['north', 'south']
         elif (boundaries[0] == 'north') and (boundaries[1] == 'south'):
-            restricted = [left, right]
+            restricted = ['west', 'east']
     elif (boundary_type == 'end'):
         if ('west' in boundaries):
-            restricted = [up, down, right]
+            restricted = ['north', 'south', 'east']
         elif ('east' in boundaries):
-            restricted = [up, down, left]
+            restricted = ['north', 'south', 'west']
 
-    if (('minotaur' in objects) or ('manticore' in objects)) and (length == 1):
-        restricted = boundaries
+    if ((object == 'manticore') or (object == 'minotaur')):
+        encounter_object(object)
 
     return restricted
+
 
 def dead():
     print("    YOU DIED.")
     exit()
 
+
 def failed_to_enter():
-    print(
-    """
+    print("""
     Just as you get up, a large bladed
     pendulum strikes you directly in the face.
     """)
     dead()
 
+
 def start():
     global current_loc
     current_loc = a[4:5]
 
+
 def entrance():
-    global weapon
+    weapon = "    WEAPON ACQUIRED!"
     global attack_up
     prologue_1 = """
     You awake in an extremely dark room with no
@@ -226,7 +254,7 @@ def entrance():
     prologue_2 = """
     You can barely make out the faint glow of a
     doorway immediately in front of you.\n"""
-    door_prompt = "    Do you go through the door?\n"
+    door_prompt = tab + "Do you go through the door?\n"
     proceed = """
     As you move through the door you hear a whooshing sound
     behind you. You turn around and see a large bladed pendulum
@@ -251,7 +279,7 @@ def entrance():
     print(prologue_1)
     print(prologue_2)
     print(door_prompt)
-    answer = input("    > ").lower()
+    answer = input(tab + "> ").lower()
     if ('yes' in answer) or ('go through' in answer):
         print(proceed)
         start()
@@ -261,10 +289,14 @@ def entrance():
         print(attack_up)
         print(weaponized_proceed)
         start()
-    else: failed_to_enter()
+    else:
+        failed_to_enter()
+
 
 def main():
     global current_loc
     entrance()
+    which_way()
+
 
 main()
